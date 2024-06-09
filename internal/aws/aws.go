@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"net/url"
 	"strings"
+	"time"
 
 	"github.com/aws/aws-sdk-go-v2/config"
 	"gopkg.in/ini.v1"
@@ -18,15 +19,18 @@ type SigninToken struct {
 }
 
 type Profile struct {
-	name       string
-	account_id string
-	role_name  string
+	Name           string
+	AccountId      string
+	RoleName       string
+	Region         string
+	LoginUrl       string
+	LoginUrlExpiry time.Time
 }
 
 func NewProfileFromConfig(name string, cfg ini.Section) *Profile {
-	p := Profile{name: name}
-	p.account_id = cfg.Key("sso_account_id").String()
-	p.role_name = cfg.Key("sso_role_name").String()
+	p := Profile{Name: name}
+	p.AccountId = cfg.Key("sso_account_id").String()
+	p.RoleName = cfg.Key("sso_role_name").String()
 	return &p
 }
 
