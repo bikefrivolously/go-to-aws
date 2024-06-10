@@ -9,28 +9,50 @@ import (
 	"github.com/bikefrivolously/go-to-aws/internal/aws"
 )
 
-func rootHandler(w http.ResponseWriter, r *http.Request) {
-	profiles, err := aws.GetAwsProfiles()
+func getProfileByName(profiles []aws.Profile, name string) *aws.Profile {
+	for _, p := range profiles {
+		if p.Name == name {
+			return &p
+		}
+	}
+	return nil
+}
+
+type Server struct {
+	Profiles []aws.Profile
+}
+
+func (s *Server) rootHandler(w http.ResponseWriter, r *http.Request) {
+	var err error
+	s.Profiles, err = aws.GetAwsProfiles()
 	if err != nil {
 		log.Println("Error getting list of profiles", err)
 		return
 	}
 	t := template.Must(template.ParseFiles("templates/root.html"))
-	t.Execute(w, profiles)
+	t.Execute(w, s.Profiles)
 }
 
-func loginHandler(w http.ResponseWriter, r *http.Request) {
+func (s *Server) loginHandler(w http.ResponseWriter, r *http.Request) {
+	var err error
 	profile_name := r.FormValue("profile")
-	login_url, err := aws.GetLoginUrl(profile_name, "ca-central-1")
+	region := r.FormValue("region")
+	p := getProfileByName(s.Profiles, profile_name)
+	if region != "" {
+		err = p.GetLoginUrl(region)
+	} else {
+		err = p.GetDefaultLoginUrl()
+	}
 	if err != nil {
 		fmt.Fprintln(w, "Error getting login URL:", err)
+		return
 	}
 	t := template.Must(template.ParseFiles("templates/login.html"))
-	t.Execute(w, login_url)
+	t.Execute(w, p.LoginUrl)
 }
 
-func RunServer() {
-	http.HandleFunc("/", rootHandler)
-	http.HandleFunc("/login", loginHandler)
+func (s *Server) Run() {
+	http.HandleFunc("/", s.rootHandler)
+	http.HandleFunc("/login", s.loginHandler)
 	log.Fatal(http.ListenAndServe(":8000", nil))
 }

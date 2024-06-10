@@ -5,7 +5,9 @@
 	<body>
 		<h1>Available Profiles</h1>
 		{{- range $profile := .}}
-		<div><a href="/login?profile={{$profile.Name}}">{{$profile.Name}}</a></div>
+		<div>
+			<a href="/login?profile={{$profile.Name}}">{{$profile.Name}}</a>
+		</div>
 		{{- end}}
 	</body>
 </html>

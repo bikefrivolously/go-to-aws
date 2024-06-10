@@ -8,5 +8,6 @@ import (
 
 func main() {
 	fmt.Println("Starting server...")
-	server.RunServer()
+	s := server.Server{}
+	s.Run()
 }
