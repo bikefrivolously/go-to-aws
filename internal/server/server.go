@@ -19,6 +19,8 @@ func getProfileByName(profiles []aws.Profile, name string) *aws.Profile {
 }
 
 type Server struct {
+	Address  string
+	Port     int
 	Profiles []aws.Profile
 }
 
@@ -54,5 +56,6 @@ func (s *Server) loginHandler(w http.ResponseWriter, r *http.Request) {
 func (s *Server) Run() {
 	http.HandleFunc("/", s.rootHandler)
 	http.HandleFunc("/login", s.loginHandler)
-	log.Fatal(http.ListenAndServe(":8000", nil))
+	addr := fmt.Sprintf("%s:%d", s.Address, s.Port)
+	log.Fatal(http.ListenAndServe(addr, nil))
 }
